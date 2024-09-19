@@ -1,29 +1,34 @@
 package entity;
 
 import entity.enums.EtatProjet;
-import java.util.List;
 
 public class Projet {
+    private int id;
     private String nomProjet;
     private double margeBeneficiaire;
     private double coutTotal;
     private EtatProjet etatProjet;
     private Client client;
-    private List<Composant> composants;
-    private Devis devis;
 
-    public Projet(String nomProjet, double margeBeneficiaire, double coutTotal, EtatProjet etatProjet, Client client,
-            List<Composant> composants, Devis devis) {
+    public Projet(int id, String nomProjet, double margeBeneficiaire, double coutTotal, EtatProjet etatProjet,
+            Client client) {
+        this.id = id;
         this.nomProjet = nomProjet;
         this.margeBeneficiaire = margeBeneficiaire;
         this.coutTotal = coutTotal;
         this.etatProjet = etatProjet;
         this.client = client;
-        this.composants = composants;
-        this.devis = devis;
     }
 
     // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getNomProjet() {
         return nomProjet;
     }
@@ -62,21 +67,5 @@ public class Projet {
 
     public void setClient(Client client) {
         this.client = client;
-    }
-
-    public List<Composant> getComposants() {
-        return composants;
-    }
-
-    public void setComposants(List<Composant> composants) {
-        this.composants = composants;
-    }
-
-    public Devis getDevis() {
-        return devis;
-    }
-
-    public void setDevis(Devis devis) {
-        this.devis = devis;
     }
 }

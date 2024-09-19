@@ -1,17 +1,29 @@
 package entity;
 
 public abstract class Composant {
+    private int id;
     private String nom;
     private String typeComposant;
     private double tauxTVA;
+    private Projet projet;
 
-    public Composant(String nom, String typeComposant, double tauxTVA) {
+    public Composant(int id, String nom, String typeComposant, double tauxTVA, Projet projet) {
+        this.id = id;
         this.nom = nom;
         this.typeComposant = typeComposant;
         this.tauxTVA = tauxTVA;
+        this.projet = projet;
     }
 
     // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getNom() {
         return nom;
     }
@@ -34,5 +46,13 @@ public abstract class Composant {
 
     public void setTauxTVA(double tauxTVA) {
         this.tauxTVA = tauxTVA;
+    }
+
+    public Projet getProjet() {
+        return projet;
+    }
+
+    public void setProjet(Projet projet) {
+        this.projet = projet;
     }
 }
