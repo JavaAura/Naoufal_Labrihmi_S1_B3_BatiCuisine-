@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": "Naoufal_Labrihmi_S1_B3_BatiCuisine-_4ee17f7a"
+        }
+    ]
+}

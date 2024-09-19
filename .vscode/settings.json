@@ -1,0 +1,17 @@
+{
+  "java.project.sourcePaths": [
+    "src"
+  ],
+  "java.project.outputPath": "bin",
+  "java.project.referencedLibraries": [
+    "c:\\Users\\naoufal\\OneDrive\\Desktop\\Naoufal_Labrihmi_S1_B3_BatiCuisine-\\lib\\postgresql-42.7.4.jar"
+  ],
+  // "java.home": "C:\\Program Files\\Java\\jdk-1.8", 
+  "java.configuration.runtimes": [
+  {
+    "name": "JavaSE-1.8",
+    "path": "C:\\Program Files\\Java\\jdk-1.8",
+    "default": true
+  }
+]
+}
