@@ -15,6 +15,9 @@ public class Materiel extends Composant {
         this.coefficientQualite = coefficientQualite;
     }
 
+    public Materiel() {
+    }
+
     public double getCoutUnitaire() {
         return coutUnitaire;
     }
