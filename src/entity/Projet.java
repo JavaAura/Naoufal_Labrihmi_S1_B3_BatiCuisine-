@@ -3,14 +3,17 @@ package entity;
 import entity.enums.EtatProjet;
 
 public class Projet {
-    private int id;
+    private Long id;
     private String nomProjet;
     private double margeBeneficiaire;
     private double coutTotal;
     private EtatProjet etatProjet;
     private Client client;
 
-    public Projet(int id, String nomProjet, double margeBeneficiaire, double coutTotal, EtatProjet etatProjet,
+    public Projet() {
+    }
+
+    public Projet(Long id, String nomProjet, double margeBeneficiaire, double coutTotal, EtatProjet etatProjet,
             Client client) {
         this.id = id;
         this.nomProjet = nomProjet;
@@ -21,11 +24,11 @@ public class Projet {
     }
 
     // Getters and Setters
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
