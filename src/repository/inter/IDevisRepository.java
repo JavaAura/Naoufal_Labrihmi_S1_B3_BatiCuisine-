@@ -1,7 +1,5 @@
 package repository.inter;
 
-import java.util.List;
-
 import entity.Devis;
 
 public interface IDevisRepository {
