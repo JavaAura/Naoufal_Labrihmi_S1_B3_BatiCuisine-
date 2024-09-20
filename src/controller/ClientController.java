@@ -1,6 +1,5 @@
 package controller;
 
-import java.util.List;
 import entity.Client;
 import service.iter.IClientService;
 
