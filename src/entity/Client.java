@@ -1,13 +1,16 @@
 package entity;
 
 public class Client {
-    private int id;
+    private Long id;
     private String nom;
     private String adresse;
     private String telephone;
     private boolean estProfessionnel;
 
-    public Client(int id, String nom, String adresse, String telephone, boolean estProfessionnel) {
+    public Client() {
+    }
+
+    public Client(Long id, String nom, String adresse, String telephone, boolean estProfessionnel) {
         this.id = id;
         this.nom = nom;
         this.adresse = adresse;
@@ -16,11 +19,11 @@ public class Client {
     }
 
     // Getters and Setters
-    public int getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
