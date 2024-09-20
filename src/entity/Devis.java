@@ -10,6 +10,9 @@ public class Devis {
     private boolean accepte;
     private Projet projet;
 
+    public Devis() {
+    }
+
     public Devis(int id, double montantEstime, Date dateEmission, Date dateValidite, boolean accepte, Projet projet) {
         this.id = id;
         this.montantEstime = montantEstime;
