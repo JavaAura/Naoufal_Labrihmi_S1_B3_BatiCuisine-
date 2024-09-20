@@ -7,6 +7,9 @@ public abstract class Composant {
     private double tauxTVA;
     private Projet projet;
 
+    public Composant() {
+    }
+
     public Composant(int id, String nom, String typeComposant, double tauxTVA, Projet projet) {
         this.id = id;
         this.nom = nom;
