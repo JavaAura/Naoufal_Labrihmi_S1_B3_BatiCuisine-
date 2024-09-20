@@ -5,6 +5,9 @@ public class MainOeuvre extends Composant {
     private double heuresTravail;
     private double productiviteOuvrier;
 
+    public MainOeuvre() {
+    }
+
     public MainOeuvre(int id, String nom, String typeComposant, double tauxTVA, double tauxHoraire,
             double heuresTravail,
             double productiviteOuvrier, Projet projet) {
