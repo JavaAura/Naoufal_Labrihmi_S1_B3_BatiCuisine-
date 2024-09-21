@@ -10,9 +10,9 @@ public class ProjetController {
     private final IProjetService projetService;
     private final ClientController clientController;
 
-    public ProjetController(IProjetService projetService, IClientService clientService) {
+    public ProjetController(IProjetService projetService, ClientController clientController) {
         this.projetService = projetService;
-        this.clientController = new ClientController(clientService);
+        this.clientController = clientController;
     }
 
     public void createProject(String projectName, double profitMargin, String clientName, String clientAddress,
@@ -40,7 +40,7 @@ public class ProjetController {
 
         projetService.addProject(projet);
         System.out.println(
-                "Project created successfully: " + projet.getNomProjet() + " with client: " + existingClient.getNom());
+                "Success: Project " + projet.getNomProjet() + " created for client " + existingClient.getNom());
     }
 
     public void addComponentToProject(Long projectId, String componentName, double unitCost, int quantity) {
