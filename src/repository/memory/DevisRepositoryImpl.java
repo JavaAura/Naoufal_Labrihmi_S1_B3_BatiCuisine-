@@ -37,6 +37,74 @@ public class DevisRepositoryImpl implements IDevisRepository {
         }
     }
 
+    @Override
+    public Devis getDevisById(int id) {
+        String sql = "SELECT * FROM Devis WHERE id = ?";
+        Devis devis = null;
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                devis = mapResultSetToDevis(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return devis;
+    }
+
+    @Override
+    public void updateAccDevis(Devis devis) {
+        String sql = "UPDATE Devis SET accepte = ? WHERE id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setBoolean(1, devis.isAccepte());
+            stmt.setInt(2, devis.getId()); // Assuming Devis has a getId() method
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private Devis mapResultSetToDevis(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+        double montantEstime = rs.getDouble("montantEstime");
+        Date dateEmission = rs.getDate("dateEmission");
+        Date dateValidite = rs.getDate("dateValidite");
+        boolean accepte = rs.getBoolean("accepte");
+
+        // Retrieve Projet object (you might need to implement this correctly)
+        int projetId = rs.getInt("projet_id");
+        Projet projet = new Projet(); // Placeholder, implement the correct way to fetch Projet
+
+        return new Devis(id, montantEstime, dateEmission, dateValidite, accepte, projet, 0, 0); // Replace 0s with
+                                                                                                // actual values if
+                                                                                                // needed
+    }
+
+    @Override
+    public Devis findByProjetId(Long projetId) {
+        String sql = "SELECT * FROM Devis WHERE projet_id = ?";
+        Devis devis = null;
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, projetId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                devis = mapResultSetToDevis(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return devis;
+    }
+
     // @Override
     // public List<Devis> findAll() {
     // String sql = "SELECT * FROM Devis";
