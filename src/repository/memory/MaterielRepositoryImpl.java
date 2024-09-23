@@ -2,7 +2,10 @@ package repository.memory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import entity.Materiel;
 import repository.inter.IComposantRepository;
@@ -34,6 +37,38 @@ public class MaterielRepositoryImpl implements IComposantRepository<Materiel> {
             System.err.println("SQL error while inserting Materiel: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<Materiel> getAllComposantsByProject(Long projectId) {
+        List<Materiel> materiels = new ArrayList<>();
+        String sql = "SELECT * FROM Materiel WHERE projet_id = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, projectId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Materiel materiel = new Materiel();
+                materiel.setNom(rs.getString("nom"));
+                materiel.setTypeComposant(rs.getString("typeComposant"));
+                materiel.setTauxTVA(rs.getDouble("tauxTVA"));
+                materiel.setCoutUnitaire(rs.getDouble("coutUnitaire"));
+                materiel.setQuantite(rs.getDouble("quantite"));
+                materiel.setCoutTransport(rs.getDouble("coutTransport"));
+                materiel.setCoefficientQualite(rs.getDouble("coefficientQualite"));
+                // Set the project based on projectId if necessary
+                // materiel.setProjet(new Projet(projectId)); // Assuming you have a way to set
+                // it
+
+                materiels.add(materiel);
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL error while retrieving Materiel by project: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return materiels;
     }
 
 }
