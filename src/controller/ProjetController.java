@@ -15,7 +15,7 @@ public class ProjetController {
         this.clientController = clientController;
     }
 
-    public void createProject(String projectName, double profitMargin, String clientName, String clientAddress,
+    public Projet createProject(String projectName, double profitMargin, String clientName, String clientAddress,
             String clientPhone, boolean isProfessional) {
         // Check if the client exists by name
         Client existingClient = clientController.getClientByName(clientName);
@@ -27,7 +27,7 @@ public class ProjetController {
             existingClient = clientController.getClientByName(clientName);
             if (existingClient == null) {
                 System.out.println("Error: Client creation failed. Cannot associate client with the project.");
-                return;
+                return null;
             }
         }
 
@@ -35,12 +35,14 @@ public class ProjetController {
         Projet projet = new Projet();
         projet.setNomProjet(projectName);
         projet.setMargeBeneficiaire(profitMargin);
-        projet.setEtatProjet(EtatProjet.EN_COURS); // Assuming EtatProjet is an enum with values
+        projet.setEtatProjet(EtatProjet.EN_COURS); // Assuming EtatProjet is an enum with values like EN_COURS, etc.
         projet.setClient(existingClient); // Associate the client with the project
 
+        // Save the project using the service layer
         projetService.addProject(projet);
-        System.out.println(
-                "Success: Project " + projet.getNomProjet() + " created for client " + existingClient.getNom());
+
+        // Return the newly created project object
+        return projet;
     }
 
     public void addComponentToProject(Long projectId, String componentName, double unitCost, int quantity) {
@@ -74,6 +76,27 @@ public class ProjetController {
         } else {
             System.out.println("Project not found.");
         }
+    }
+
+    public Projet getProjetByName(String ProjetName) {
+        Projet projet = projetService.getProjectByName(ProjetName);
+        if (projet != null) {
+            System.out.println("Project found: " + projet.getNomProjet());
+            return projet;
+        } else {
+            System.out.println("Project not found.");
+            return null;
+        }
+    }
+
+    public Projet getProjectById(Long projectId) {
+        Projet projet = projetService.getProjectById(projectId);
+        if (projet != null) {
+            System.out.println("Project found: " + projet.getNomProjet());
+        } else {
+            System.out.println("Project not found.");
+        }
+        return projet;
     }
 
 }
