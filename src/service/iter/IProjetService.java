@@ -11,4 +11,5 @@ public interface IProjetService {
 
     Projet getProjectById(Long id);
 
+    Projet getProjectByName(String name);
 }
