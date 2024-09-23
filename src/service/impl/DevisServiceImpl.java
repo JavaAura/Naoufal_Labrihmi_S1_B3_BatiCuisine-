@@ -15,4 +15,20 @@ public class DevisServiceImpl implements IDevisService {
     public void addDevis(Devis devis) {
         devisRepository.addDevis(devis);
     }
+
+    @Override
+    public Devis getDevisById(int id) {
+        return devisRepository.getDevisById(id);
+    }
+
+    @Override
+    public void updateAccDevis(Devis devis) {
+        devisRepository.updateAccDevis(devis);
+    }
+
+    @Override
+    public Devis findByProjetId(Long projetId) {
+        return devisRepository.findByProjetId(projetId);
+    }
+
 }
