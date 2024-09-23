@@ -9,17 +9,22 @@ public class Devis {
     private Date dateValidite;
     private boolean accepte;
     private Projet projet;
+    private double tva;
+    private double margeBeneficiaire;
 
     public Devis() {
     }
 
-    public Devis(int id, double montantEstime, Date dateEmission, Date dateValidite, boolean accepte, Projet projet) {
+    public Devis(int id, double montantEstime, Date dateEmission, Date dateValidite, boolean accepte, Projet projet,
+            double tva, double margeBeneficia) {
         this.id = id;
         this.montantEstime = montantEstime;
         this.dateEmission = dateEmission;
         this.dateValidite = dateValidite;
         this.accepte = accepte;
         this.projet = projet;
+        this.tva = tva;
+        this.margeBeneficiaire = margeBeneficiaire;
     }
 
     // Getters and Setters
@@ -70,4 +75,21 @@ public class Devis {
     public void setProjet(Projet projet) {
         this.projet = projet;
     }
+
+    public double getTva() {
+        return tva;
+    }
+
+    public void setTva(double tva) {
+        this.tva = tva;
+    }
+
+    public double getMargeBeneficiaire() {
+        return margeBeneficiaire;
+    }
+
+    public void setMargeBeneficiaire(double margeBeneficiaire) {
+        this.margeBeneficiaire = margeBeneficiaire;
+    }
+
 }
