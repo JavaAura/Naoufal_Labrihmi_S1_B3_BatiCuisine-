@@ -27,4 +27,9 @@ public class ProjetServiceImpl implements IProjetService {
     public Projet getProjectById(Long id) {
         return projetRepository.getProjectById(id);
     }
+
+    @Override
+    public Projet getProjectByName(String name) {
+        return projetRepository.getProjectByName(name);
+    }
 }
