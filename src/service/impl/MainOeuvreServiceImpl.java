@@ -1,5 +1,7 @@
 package service.impl;
 
+import java.util.List;
+
 import entity.MainOeuvre;
 import repository.inter.IComposantRepository;
 import service.iter.IComposantService;
@@ -14,5 +16,10 @@ public class MainOeuvreServiceImpl implements IComposantService<MainOeuvre> {
     @Override
     public void addComposant(MainOeuvre mainOeuvre) {
         mainOeuvreRepository.addComposant(mainOeuvre);
+    }
+
+    @Override
+    public List<MainOeuvre> getAllComposantsByProject(Long projectId) {
+        return mainOeuvreRepository.getAllComposantsByProject(projectId);
     }
 }
