@@ -57,3 +57,12 @@ The application leverages modern Java features and design patterns to provide a 
 ```bash
     java -jar Bati-Cuisine.jar
 ```
+
+**JIRA Project**
+For task management and progress tracking, please refer to the JIRA project: https://naoufallabrihmi.atlassian.net/jira/software/projects/BATI/boards/1
+
+## UML Class Diagram
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
