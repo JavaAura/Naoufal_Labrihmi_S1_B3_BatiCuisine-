@@ -6,7 +6,6 @@ import service.iter.IDevisService;
 import service.iter.IProjetService;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class DevisController {
     private final IDevisService devisService;
@@ -18,7 +17,7 @@ public class DevisController {
     }
 
     public void createDevis(Projet projet, double estimatedAmount, LocalDate emissionDate, LocalDate validityDate,
-            boolean isAccepted, double tva, double margeBeneficiaire) {
+            boolean isAccepted) {
         if (projet == null) {
             System.out.println("Project cannot be null.");
             return;
@@ -30,11 +29,9 @@ public class DevisController {
         devis.setDateValidite(java.sql.Date.valueOf(validityDate));
         devis.setAccepte(isAccepted);
         devis.setProjet(projet); // Associate the Devis with the Projet
-        devis.setTva(tva); // Set TVA
-        devis.setMargeBeneficiaire(margeBeneficiaire); // Set profit margin
 
         devisService.addDevis(devis);
-        System.out.println("Estimate created successfully for project: " + projet.getNomProjet());
+        System.out.println("Devis created successfully for project: " + projet.getNomProjet());
     }
 
     public void updateAccDevis(int devisId, boolean isAccepted) {
