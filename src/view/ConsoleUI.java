@@ -1,6 +1,7 @@
 package view;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Scanner;
 
 import controller.ClientController;
@@ -10,13 +11,16 @@ import controller.ProjetController;
 import entity.Client;
 import entity.Devis;
 import entity.Projet;
+import entity.enums.EtatProjet;
+import utilitaire.DateUtils;
+import utilitaire.InputValidator;
 
 public class ConsoleUI {
     private final ProjetController projetController;
     private final DevisController devisController;
     private final ClientController clientController;
     private final ComposantController composantController;
-    private final Scanner scanner;
+    private final InputValidator inputValidator;
 
     public ConsoleUI(ProjetController projetController, DevisController devisController,
             ClientController clientController, ComposantController composant) {
@@ -24,7 +28,9 @@ public class ConsoleUI {
         this.devisController = devisController;
         this.clientController = clientController;
         this.composantController = composant;
-        this.scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
+        this.inputValidator = new InputValidator(scanner);
+
     }
 
     public void start() {
@@ -33,15 +39,14 @@ public class ConsoleUI {
 
         while (running) {
             afficherMenuPrincipal();
-            int choix = scanner.nextInt();
-            scanner.nextLine(); // consume newline
+            int choix = inputValidator.promptInt("Choisissez une option : ");
 
             switch (choix) {
                 case 1:
                     createProject();
                     break;
                 case 2:
-                    // afficherProjetsExistants();
+                    projetController.afficherProjetsExistants();
                     break;
                 case 3:
                     calculateProjectCost();
@@ -50,6 +55,9 @@ public class ConsoleUI {
                     changeDevisAcceptanceStatus();
                     break;
                 case 5:
+                    updateProjectState();
+                    break;
+                case 6:
                     running = false;
                     System.out.println("Au revoir !");
                     break;
@@ -59,116 +67,120 @@ public class ConsoleUI {
         }
     }
 
+    private void updateProjectState() {
+        // Ask for project name
+        System.out.print("Mettre à jour etat de projet :\n ");
+        String projectName = inputValidator.getValidatedString("nom du projet");
+
+        // Ask for project state
+        System.out.print("Entrez le nouvel état du projet (EN_COURS, TERMINE, ANNULE) : ");
+        String newStateInput = inputValidator.getValidatedString("état du projet",
+                Arrays.asList("EN_COURS", "TERMINE", "ANNULE"));
+
+        // Validate and convert the project state
+        EtatProjet newState;
+        try {
+            newState = EtatProjet.valueOf(newStateInput.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.out.println("État de projet invalide. Veuillez utiliser EN_COURS, TERMINE ou ANNULE.");
+            return;
+        }
+
+        // Update project state
+        projetController.updateProjectStateByName(projectName, newState);
+        System.out.println("État du projet '" + projectName + "' mis à jour avec succès.");
+    }
+
     private void afficherMenuPrincipal() {
         System.out.println("=== Menu Principal ===");
         System.out.println("1. Créer un nouveau projet");
         System.out.println("2. Afficher les projets existants");
         System.out.println("3. Calculer le coût d'un projet");
         System.out.println("4. Changer le statut d'acceptation d'un devis");
-        System.out.println("5. Quitter");
-        System.out.print("Choisissez une option : ");
+        System.out.println("5. Mettre à jour l'état d'un projet"); // New option
+        System.out.println("6. Quitter");
     }
 
     private void createProject() {
         System.out.println("--- Recherche de client ---");
-        System.out.println("Souhaitez-vous chercher un client existant ou en ajouter un nouveau ?");
-        System.out.println("1. Chercher un client existant");
-        System.out.println("2. Ajouter un nouveau client");
-        System.out.print("Choisissez une option : ");
-        int clientOption = Integer.parseInt(scanner.nextLine());
-
-        Client client = null;
-
-        if (clientOption == 1) {
-            System.out.println("--- Recherche de client existant ---");
-            System.out.print("Entrez le nom du client : ");
-            String clientName = scanner.nextLine();
-            client = clientController.getClientByName(clientName);
-
-            if (client != null) {
-                System.out.println("Client trouvé !");
-                System.out.println("Nom : " + client.getNom());
-                System.out.println("Adresse : " + client.getAdresse());
-                System.out.println("Numéro de téléphone : " + client.getTelephone());
-                System.out.print("Souhaitez-vous continuer avec ce client ? (y/n) : ");
-                String continueWithClient = scanner.nextLine();
-                if (!continueWithClient.equalsIgnoreCase("y")) {
-                    return;
-                }
-            } else {
-                System.out.println("Client non trouvé.");
-                return;
-            }
-        } else if (clientOption == 2) {
-            System.out.println("--- Ajouter un nouveau client ---");
-            System.out.print("Entrez le nom du client : ");
-            String clientName = scanner.nextLine();
-            System.out.print("Entrez l'adresse du client : ");
-            String clientAddress = scanner.nextLine();
-            System.out.print("Entrez le numéro de téléphone du client : ");
-            String clientPhone = scanner.nextLine();
-            System.out.print("Le client est-il un professionnel ? (true/false) : ");
-            boolean isProfessional = Boolean.parseBoolean(scanner.nextLine());
-
-            clientController.registerClient(clientName, clientAddress, clientPhone, isProfessional);
-            client = clientController.getClientByName(clientName);
-        }
+        Client client = getClient();
 
         if (client != null) {
             System.out.println("--- Création d'un Nouveau Projet ---");
-            System.out.print("Entrez le nom du projet : ");
-            String projectName = scanner.nextLine();
+            String projectName = inputValidator.promptString("Entrez le nom du projet : ");
+            double surface = inputValidator.promptInt("Entrez la surface de la cuisine (en m²) : ");
 
-            System.out.print("Entrez la surface de la cuisine (en m²) : ");
-            double surface = Double.parseDouble(scanner.nextLine());
-
-            // Create the project
             Projet newProject = projetController.createProject(
                     projectName,
-                    0, // profit margin can be entered later if needed
+                    0, // Initial profit margin
                     client.getNom(),
                     client.getAdresse(),
                     client.getTelephone(),
-                    client.isEstProfessionnel());
+                    client.isEstProfessionnel(),
+                    surface);
 
             Long projectId = newProject.getId();
             if (projectId != null) {
                 System.out.println("Projet créé avec succès! ID du projet : " + projectId);
                 addMaterials(projectId);
                 addLabor(projectId);
-                System.out.println("Tous les composants ont été ajoutés avec succès.");
+
+                // Finalize cost and create quote
+                finalizeAndCreateQuote(projectId);
             } else {
                 System.out.println("Erreur lors de la création du projet. ID non généré.");
             }
         }
     }
 
+    private Client getClient() {
+        System.out.println("Souhaitez-vous chercher un client existant ou en ajouter un nouveau ?");
+        System.out.println("1. Chercher un client existant");
+        System.out.println("2. Ajouter un nouveau client");
+        int clientOption = inputValidator.promptInt("Choisissez une option : ");
+
+        if (clientOption == 1) {
+            String clientName = inputValidator.promptString("Entrez le nom du client : ");
+            Client client = clientController.getClientByName(clientName);
+            if (client != null) {
+                System.out.println("Client trouvé !");
+                return client;
+            } else {
+                System.out.println("Client non trouvé.");
+            }
+        } else if (clientOption == 2) {
+            return addNewClient();
+        }
+        return null;
+    }
+
+    private Client addNewClient() {
+        System.out.println("--- Ajouter un nouveau client ---");
+        String clientName = inputValidator.promptString("Entrez le nom du client : ");
+        String clientAddress = inputValidator.promptString("Entrez l'adresse du client : ");
+        String clientPhone = inputValidator.promptString("Entrez le numéro de téléphone du client : ");
+        boolean isProfessional = inputValidator.getBooleanInput("Le client est-il un professionnel ? (true/false) : ");
+
+        clientController.registerClient(clientName, clientAddress, clientPhone, isProfessional);
+        return clientController.getClientByName(clientName);
+    }
+
     private void addMaterials(Long projectId) {
         System.out.println("--- Ajout des matériaux ---");
         boolean addAnotherMaterial = true;
         while (addAnotherMaterial) {
-            System.out.print("Entrez le nom du matériau : ");
-            String materialName = scanner.nextLine();
-
-            System.out.print("Entrez la quantité de ce matériau (en m²) : ");
-            double quantity = scanner.nextDouble();
-
-            System.out.print("Entrez le coût unitaire de ce matériau (€/m²) : ");
-            double unitCost = scanner.nextDouble();
-
-            System.out.print("Entrez le coût de transport de ce matériau (€) : ");
-            double transportCost = scanner.nextDouble();
-
-            System.out.print("Entrez le coefficient de qualité du matériau (1.0 = standard, > 1.0 = haute qualité) : ");
-            double qualityCoefficient = scanner.nextDouble();
-            scanner.nextLine(); // Consume newline
+            String materialName = inputValidator.promptString("Entrez le nom du matériau : ");
+            double quantity = inputValidator.promptInt("Entrez la quantité de ce matériau (en m²) : ");
+            double unitCost = inputValidator.promptInt("Entrez le coût unitaire de ce matériau (€/m²) : ");
+            double transportCost = inputValidator.promptInt("Entrez le coût de transport de ce matériau (€) : ");
+            double qualityCoefficient = inputValidator.promptInt(
+                    "Entrez le coefficient de qualité du matériau (1.0 = standard, > 1.0 = haute qualité) : ");
 
             composantController.addMateriel(materialName, unitCost, quantity, "Matériau", 0.2, transportCost,
                     qualityCoefficient, projectId);
             System.out.println("Matériau ajouté avec succès !");
-            System.out.print("Voulez-vous ajouter un autre matériau ? (y/n) : ");
-            String continueAdding = scanner.nextLine();
-            addAnotherMaterial = continueAdding.equalsIgnoreCase("y");
+            addAnotherMaterial = inputValidator.promptString("Voulez-vous ajouter un autre matériau ? (y/n) : ")
+                    .equalsIgnoreCase("y");
         }
     }
 
@@ -176,125 +188,138 @@ public class ConsoleUI {
         System.out.println("--- Ajout de la main-d'œuvre ---");
         boolean addAnotherLabor = true;
         while (addAnotherLabor) {
-            System.out.print("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
-            String laborType = scanner.nextLine();
-
-            System.out.print("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
-            double hourlyRate = scanner.nextDouble();
-
-            System.out.print("Entrez le nombre d'heures travaillées : ");
-            double hoursWorked = scanner.nextDouble();
-
-            System.out.print("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
-            double productivityFactor = scanner.nextDouble();
-            scanner.nextLine(); // Consume newline
+            String laborType = inputValidator
+                    .promptString("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
+            double hourlyRate = inputValidator.promptInt("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
+            double hoursWorked = inputValidator.promptInt("Entrez le nombre d'heures travaillées : ");
+            double productivityFactor = inputValidator
+                    .promptInt("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
 
             composantController.addMainOeuvre(laborType, hourlyRate, hoursWorked, productivityFactor, "Main-d'œuvre",
                     0.2, projectId);
             System.out.println("Main-d'œuvre ajoutée avec succès !");
-            System.out.print("Voulez-vous ajouter un autre type de main-d'œuvre ? (y/n) : ");
-            String continueAddingLabor = scanner.nextLine();
-            addAnotherLabor = continueAddingLabor.equalsIgnoreCase("y");
+            addAnotherLabor = inputValidator
+                    .promptString("Voulez-vous ajouter un autre type de main-d'œuvre ? (y/n) : ").equalsIgnoreCase("y");
         }
     }
 
-    private void calculateProjectCost() {
-        System.out.println("--- Calcul du coût d'un projet ---");
-        System.out.print("Entrez le nom du projet : ");
-        String projectName = scanner.nextLine();
+    private void finalizeAndCreateQuote(Long projectId) {
+        System.out.println("--- Finalisation du coût du projet et création d'un devis ---");
 
-        // Fetch the project by name
-        Projet project = projetController.getProjetByName(projectName);
-
-        if (project != null) {
-            // If the project exists, calculate the total cost
-            calculateTotalCost(project.getId());
-        } else {
-            System.out.println("Projet non trouvé avec le nom : " + projectName);
-        }
-    }
-
-    private void calculateTotalCost(Long projectId) {
-        System.out.println("--- Calcul du coût total ---");
-
-        // Fetch the project object
-        Projet project = projetController.getProjectById(projectId);
-        if (project == null) {
-            System.out.println("Project not found.");
-            return;
-        }
-
-        // Continue with VAT and margin input
-        System.out.print("Souhaitez-vous appliquer une TVA au projet ? (y/n) : ");
-        boolean applyVAT = scanner.nextLine().equalsIgnoreCase("y");
+        // Prompt for profit margin
+        double marginPercentage = inputValidator.promptInt("Entrez la marge bénéficiaire (%) : ");
+        boolean applyVAT = inputValidator.getBooleanInput("Appliquer la TVA ? (true/false) : ");
         double vatPercentage = 0;
         if (applyVAT) {
-            System.out.print("Entrez le pourcentage de TVA (%) : ");
-            vatPercentage = scanner.nextDouble();
-            scanner.nextLine(); // consume newline
-        }
+            vatPercentage = inputValidator.promptDouble("Entrez le pourcentage de TVA (%) : ");
 
-        System.out.print("Souhaitez-vous appliquer une marge bénéficiaire au projet ? (y/n) : ");
-        boolean applyMargin = scanner.nextLine().equalsIgnoreCase("y");
-        double marginPercentage = 0;
-        if (applyMargin) {
-            System.out.print("Entrez le pourcentage de marge bénéficiaire (%) : ");
-            marginPercentage = scanner.nextDouble();
-            scanner.nextLine(); // consume newline
         }
 
         // Calculate costs
         double materialsCostBeforeVAT = composantController.calculateTotalMaterialsCost(projectId);
         double laborCostBeforeVAT = composantController.calculateTotalLaborCost(projectId);
 
-        // VAT Calculation
-        double materialsCostWithVAT = applyVAT ? materialsCostBeforeVAT * (1 + vatPercentage / 100)
-                : materialsCostBeforeVAT;
-        double laborCostWithVAT = applyVAT ? laborCostBeforeVAT * (1 + vatPercentage / 100) : laborCostBeforeVAT;
+        double totalCostBeforeMargin = materialsCostBeforeVAT + laborCostBeforeVAT;
 
-        // Total Costs
-        double totalCostBeforeMargin = materialsCostWithVAT + laborCostWithVAT;
-        double totalCost = totalCostBeforeMargin * (1 + marginPercentage / 100);
+        // Apply margin
+        double totalCostWithMargin = totalCostBeforeMargin * (1 + marginPercentage / 100);
 
-        System.out.println("Coût total des matériaux : " + materialsCostBeforeVAT + " €");
-        System.out.println("Coût total de la main-d'œuvre : " + laborCostBeforeVAT + " €");
-        System.out.println("Coût total avant marge : " + totalCostBeforeMargin + " €");
-        System.out.println("Coût total après application de la marge : " + totalCost + " €");
+        // Apply VAT if applicable
+        double finalTotalCost = applyVAT ? totalCostWithMargin * (1 + vatPercentage / 100) : totalCostWithMargin;
 
-        // Create Devis with the project object
-        LocalDate emissionDate = LocalDate.now();
-        LocalDate validityDate = emissionDate.plusMonths(1);
+        // Store the profit margin and total cost in the database
+        projetController.updateProjectCost(projectId, totalCostBeforeMargin, marginPercentage);
 
-        devisController.createDevis(project, totalCost, emissionDate, validityDate, false, vatPercentage,
-                marginPercentage);
+        // Create the quote
+        Projet projet = projetController.getProjectById(projectId);
+        if (projet != null) {
+            System.out.println("Montant estimé calculé : " + finalTotalCost + " €");
+
+            LocalDate emissionDate = inputValidator.getValidatedDate("Entrez la date d'émission (yyyy-MM-dd) : ");
+            LocalDate validityDate = inputValidator.getValidatedDate("Entrez la date de validité (yyyy-MM-dd) : ");
+
+            boolean isAccepted = inputValidator.getBooleanInput("Le devis est-il accepté ? (true/false) : ");
+
+            devisController.createDevis(projet, finalTotalCost, emissionDate, validityDate, isAccepted);
+        } else {
+            System.out.println("Projet non trouvé.");
+        }
+    }
+
+    private void calculateProjectCost() {
+        System.out.println("--- Calculer le coût d'un projet ---");
+        String projectName = inputValidator.promptString("Entrez le nom du projet : ");
+
+        // Fetch the project using the provided name
+        Projet projet = projetController.getProjetByName(projectName);
+
+        if (projet != null) {
+            System.out.println("Projet trouvé : " + projet.nomProjet);
+
+            // Check if a quote already exists for the project
+            Devis devis = devisController.findDevisByProjetId(projet.getId());
+            if (devis != null) {
+                System.out.println("Devis déjà existant trouvé : " + devis.getId() + " avec montant estimé : "
+                        + devis.getMontantEstime() + " $");
+                return; // Exit since we already have a quote
+            }
+
+            // Calculate costs
+            double materialsCostBeforeVAT = composantController.calculateTotalMaterialsCost(projet.getId());
+            double laborCostBeforeVAT = composantController.calculateTotalLaborCost(projet.getId());
+
+            double totalCostBeforeMargin = materialsCostBeforeVAT + laborCostBeforeVAT;
+
+            // Ask if the user wants to apply a profit margin
+            boolean applyMargin = inputValidator
+                    .getBooleanInput("Souhaitez-vous appliquer une marge bénéficiaire ? (true/false) : ");
+            double totalCost = totalCostBeforeMargin;
+
+            double marginPercentage = 0;
+            if (applyMargin) {
+                marginPercentage = inputValidator.promptDouble("Entrez la marge bénéficiaire (%) : ");
+                totalCost *= (1 + marginPercentage / 100);
+                System.out.println("Coût total après application de la marge bénéficiaire : " + totalCost + " €");
+            } else {
+                System.out.println("Coût total sans marge bénéficiaire : " + totalCost + " €");
+            }
+
+            // Option to apply VAT
+            boolean applyVAT = inputValidator.getBooleanInput("Souhaitez-vous appliquer une TVA ? (true/false) : ");
+            if (applyVAT) {
+                double vatPercentage = inputValidator.promptDouble("Entrez le pourcentage de TVA (%) : ");
+                totalCost *= (1 + vatPercentage / 100);
+                System.out.println("Coût total après application de la TVA : " + totalCost + " €");
+            }
+
+            // Store the calculated cost and margin in the database
+            projetController.updateProjectCost(projet.getId(), totalCost, marginPercentage); // Fixed order
+            System.out.println("Coût du projet mis à jour avec succès.");
+        } else {
+            System.out.println("Projet non trouvé.");
+        }
     }
 
     private void changeDevisAcceptanceStatus() {
-        System.out.print("Entrez le nom du projet : ");
-        String projetNom = scanner.nextLine();
+        String projetNom = inputValidator.promptString("Entrez le nom du projet : ");
 
         // Fetch the projet using the project name
-        Projet projet = projetController.getProjetByName(projetNom); // Use projetController instead
+        Projet projet = projetController.getProjetByName(projetNom);
 
         if (projet != null) {
             // Fetch devis associated with the project
-            Devis devis = devisController.findDevisByProjetId(projet.getId()); // Ensure this method exists in
-                                                                               // DevisController
+            Devis devis = devisController.findDevisByProjetId(projet.getId());
 
             if (devis != null) {
                 System.out.println(
                         "Devis trouvé : " + devis.getId() + " avec statut d'acceptation : " + devis.isAccepte());
 
-                System.out.print("Souhaitez-vous accepter ce devis ? (y/n) : ");
-                String choix = scanner.nextLine();
-
-                // Set the acceptance status based on user input
-                boolean newAcceptanceStatus = choix.equalsIgnoreCase("y");
+                boolean newAcceptanceStatus = inputValidator
+                        .getBooleanInput("Souhaitez-vous accepter ce devis ? (true/false) : ");
                 devis.setAccepte(newAcceptanceStatus);
 
                 // Update the status in the controller
-                devisController.updateAccDevis(devis.getId(), newAcceptanceStatus); // Ensure this method exists in
-                                                                                    // DevisController
+                devisController.updateAccDevis(devis.getId(), newAcceptanceStatus);
                 System.out.println("Statut d'acceptation du devis mis à jour avec succès !");
             } else {
                 System.out.println("Aucun devis trouvé pour ce projet.");
