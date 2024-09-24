@@ -3,6 +3,7 @@ package service.impl;
 import java.util.List;
 
 import entity.Projet;
+import entity.enums.EtatProjet;
 import repository.inter.IProjetRepository;
 import service.iter.IProjetService;
 
@@ -32,4 +33,25 @@ public class ProjetServiceImpl implements IProjetService {
     public Projet getProjectByName(String name) {
         return projetRepository.getProjectByName(name);
     }
+
+    @Override
+    public void updateProjectCost(Long projectId, double totalCost, double profitMargin) {
+        projetRepository.updateProjectCost(projectId, totalCost, profitMargin);
+    }
+
+    @Override
+    public double getTotalCost(Long projectId) {
+        return projetRepository.getProjectById(projectId).getCoutTotal();
+    }
+
+    @Override
+    public List<Projet> getProjetsWithClients() {
+        return projetRepository.getProjetsWithClients();
+    }
+
+    @Override
+    public void updateProjectStateByName(String projectName, EtatProjet newState) {
+        projetRepository.updateProjectStateByName(projectName, newState);
+    }
+
 }
