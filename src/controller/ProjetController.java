@@ -26,12 +26,15 @@ public class ProjetController {
         validateProjectInputs(projectName, profitMargin, surface);
 
         Client existingClient = clientCache.computeIfAbsent(clientName, name -> {
-            Client client = clientController.getClientByName(name);
-            if (client == null) {
+            Optional<Client> optionalClient = clientController.getClientByName(name);
+            // Check if the client exists
+            if (!optionalClient.isPresent()) {
+                // Register the client if it does not exist
                 clientController.registerClient(name, clientAddress, clientPhone, isProfessional);
-                client = clientController.getClientByName(name);
+                optionalClient = clientController.getClientByName(name); // Re-fetch the client after registration
             }
-            return client;
+            // Return the client or null if not found
+            return optionalClient.orElse(null);
         });
 
         if (existingClient == null) {
@@ -70,19 +73,22 @@ public class ProjetController {
     }
 
     // public void calculateTotalCost(Long projectId) {
-    //     Projet projet = projetService.getProjectById(projectId);
-    //     if (projet != null) {
-    //         double totalCost = calculateProjectCosts(projet); // Assuming you have a method for this
-    //         projet.setCoutTotal(totalCost + projet.getMargeBeneficiaire());
-    //         System.out.println("Total cost for project " + projet.getNomProjet() + " is: " + projet.getCoutTotal());
-    //     } else {
-    //         System.out.println("Project not found.");
-    //     }
+    // Projet projet = projetService.getProjectById(projectId);
+    // if (projet != null) {
+    // double totalCost = calculateProjectCosts(projet); // Assuming you have a
+    // method for this
+    // projet.setCoutTotal(totalCost + projet.getMargeBeneficiaire());
+    // System.out.println("Total cost for project " + projet.getNomProjet() + " is:
+    // " + projet.getCoutTotal());
+    // } else {
+    // System.out.println("Project not found.");
+    // }
     // }
 
     // private double calculateProjectCosts(Projet projet) {
-    //     // Implement actual logic for calculating costs, e.g., summing components costs
-    //     return 0.0; // Placeholder
+    // // Implement actual logic for calculating costs, e.g., summing components
+    // costs
+    // return 0.0; // Placeholder
     // }
 
     public void generateEstimate(Long projectId) {
