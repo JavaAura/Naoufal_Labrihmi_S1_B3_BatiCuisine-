@@ -1,6 +1,8 @@
 package service.impl;
 
 import java.util.List;
+import java.util.Optional;
+
 import entity.Client;
 import repository.inter.IClientRepository;
 import service.iter.IClientService;
@@ -21,12 +23,12 @@ public class ClientServiceImpl implements IClientService {
     }
 
     @Override
-    public Client getClientById(Long id) {
+    public Optional<Client> getClientById(Long id) {
         return clientRepository.getClientById(id);
     }
 
     @Override
-    public Client getClientByName(String name) {
+    public Optional<Client> getClientByName(String name) {
         return clientRepository.getClientByName(name);
     }
 
