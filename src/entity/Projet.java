@@ -4,23 +4,25 @@ import entity.enums.EtatProjet;
 
 public class Projet {
     private Long id;
-    private String nomProjet;
+    public String nomProjet;
     private double margeBeneficiaire;
     private double coutTotal;
     private EtatProjet etatProjet;
     private Client client;
+    private double surface;
 
     public Projet() {
     }
 
     public Projet(Long id, String nomProjet, double margeBeneficiaire, double coutTotal, EtatProjet etatProjet,
-            Client client) {
+            Client client, double surface) {
         this.id = id;
         this.nomProjet = nomProjet;
         this.margeBeneficiaire = margeBeneficiaire;
         this.coutTotal = coutTotal;
         this.etatProjet = etatProjet;
         this.client = client;
+        this.surface = surface;
     }
 
     // Getters and Setters
@@ -70,5 +72,13 @@ public class Projet {
 
     public void setClient(Client client) {
         this.client = client;
+    }
+
+    public double getSurface() {
+        return surface;
+    }
+
+    public void setSurface(double surface) {
+        this.surface = surface;
     }
 }
