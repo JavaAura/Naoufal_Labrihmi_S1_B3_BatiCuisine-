@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import entity.Client;
 import repository.inter.IClientRepository;
@@ -33,31 +35,25 @@ public class ClientRepositoryImpl implements IClientRepository {
     }
 
     @Override
-    public Client getClientById(Long id) {
-        Client client = null;
+    public Optional<Client> getClientById(Long id) {
         String sql = "SELECT * FROM Client WHERE id = ?";
-
+        
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                client = new Client();
-                client.setId(rs.getLong("id")); // Assuming Client class has an id field
-                client.setNom(rs.getString("nom"));
-                client.setAdresse(rs.getString("adresse"));
-                client.setTelephone(rs.getString("telephone"));
-                client.setEstProfessionnel(rs.getBoolean("estProfessionnel"));
+                return Optional.of(mapResultSetToClient(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return client;
+
+        return Optional.empty(); // Return an empty Optional if no client is found
     }
 
     @Override
-    public Client getClientByName(String name) {
-        Client client = null;
+    public Optional<Client> getClientByName(String name) {
         String sql = "SELECT * FROM Client WHERE nom = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -65,39 +61,51 @@ public class ClientRepositoryImpl implements IClientRepository {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                client = new Client();
-                client.setId(rs.getLong("id")); // Assuming Client class has an id field
-                client.setNom(rs.getString("nom"));
-                client.setAdresse(rs.getString("adresse"));
-                client.setTelephone(rs.getString("telephone"));
-                client.setEstProfessionnel(rs.getBoolean("estProfessionnel"));
+                return Optional.of(mapResultSetToClient(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return client;
+
+        return Optional.empty(); // Return an empty Optional if no client is found
     }
 
     @Override
     public List<Client> getAllClients() {
-        List<Client> clients = new ArrayList<>();
         String sql = "SELECT * FROM Client";
+        List<Client> clients = new ArrayList<>();
 
         try (PreparedStatement stmt = connection.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+             ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
-                Client client = new Client();
-                client.setId(rs.getLong("id"));
-                client.setNom(rs.getString("nom"));
-                client.setAdresse(rs.getString("adresse"));
-                client.setTelephone(rs.getString("telephone"));
-                client.setEstProfessionnel(rs.getBoolean("estProfessionnel"));
-                clients.add(client);
-            }
+            clients = mapResultSetToClientList(rs);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
         return clients;
+    }
+
+    // Helper method to map ResultSet to a Client object
+    private Client mapResultSetToClient(ResultSet rs) throws SQLException {
+        Client client = new Client();
+        client.setId(rs.getLong("id"));
+        client.setNom(rs.getString("nom"));
+        client.setAdresse(rs.getString("adresse"));
+        client.setTelephone(rs.getString("telephone"));
+        client.setEstProfessionnel(rs.getBoolean("estProfessionnel"));
+        return client;
+    }
+
+    // Helper method to map ResultSet to a List of Client objects using Streams
+    private List<Client> mapResultSetToClientList(ResultSet rs) throws SQLException {
+        List<Client> clients = new ArrayList<>();
+
+        while (rs.next()) {
+            clients.add(mapResultSetToClient(rs));
+        }
+
+        return clients.stream().collect(Collectors.toList()); // Use Streams to collect the clients
     }
 }
