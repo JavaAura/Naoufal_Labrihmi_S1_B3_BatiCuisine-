@@ -3,6 +3,7 @@ package service.iter;
 import java.util.List;
 
 import entity.Projet;
+import entity.enums.EtatProjet;
 
 public interface IProjetService {
     void addProject(Projet projet);
@@ -12,4 +13,13 @@ public interface IProjetService {
     Projet getProjectById(Long id);
 
     Projet getProjectByName(String name);
+
+    void updateProjectCost(Long projectId, double totalCost, double profitMargin);
+
+    double getTotalCost(Long projectId);
+
+    List<Projet> getProjetsWithClients();
+
+    void updateProjectStateByName(String projectName, EtatProjet newState);
+
 }
