@@ -73,7 +73,7 @@ public class ComposantController {
     public double calculateTotalMaterialsCost(Long projectId) {
         Projet projet = projetService.getProjectById(projectId);
         if (projet == null) {
-            System.out.println("Project not found with ID: " + projectId);
+            System.out.println("Project not found.");
             return 0.0;
         }
 
@@ -86,7 +86,7 @@ public class ComposantController {
             totalCost += material.getCoutTransport(); // Add transport cost
         }
 
-        System.out.println("Total materials cost for project ID " + projectId + " is: " + totalCost);
+        System.out.println("Total materials cost for project is: " + totalCost);
         return totalCost;
     }
 
