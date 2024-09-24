@@ -248,7 +248,7 @@ public class ConsoleUI {
         if (projet != null) {
             double totalCost = composantController.calculateTotalMaterialsCost(projet.getId()) +
                     composantController.calculateTotalLaborCost(projet.getId());
-            System.out.println("Le coût total du projet '" + projet.getNomProjet() + "' est : " + totalCost + " €");
+            System.out.println("Le coût total du projet '" + projet.getNomProjet() + "' est : " + totalCost + " $");
         } else {
             System.out.println("Projet non trouvé.");
         }
