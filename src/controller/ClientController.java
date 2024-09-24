@@ -1,5 +1,7 @@
 package controller;
 
+import java.util.Optional;
+
 import entity.Client;
 import service.iter.IClientService;
 
@@ -37,33 +39,34 @@ public class ClientController {
         return 10.0;
     }
 
-    public Client getClientById(Long id) {
-        Client client = clientService.getClientById(id);
-        if (client != null) {
-            System.out.println("Client found: " + client.getNom());
+    public Optional<Client> getClientById(Long id) {
+        Optional<Client> client = clientService.getClientById(id);
+        if (client.isPresent()) {
+            System.out.println("Client found: " + client.get().getNom());
         } else {
             System.out.println("No client found with ID: " + id);
         }
         return client;
     }
-
-    public Client getClientByName(String name) {
-        Client client = clientService.getClientByName(name);
-        if (client != null) {
-            System.out.println("Client found: " + client.getNom());
+    
+    public Optional<Client> getClientByName(String name) {
+        Optional<Client> client = clientService.getClientByName(name);
+        if (client.isPresent()) {
+            System.out.println("Client found: " + client.get().getNom());
         } else {
             System.out.println("No client found with name: " + name);
         }
         return client;
     }
-
+    
     public boolean isUserProfessional(Long clientId) {
-        Client client = clientService.getClientById(clientId);
-        if (client == null) {
+        Optional<Client> client = clientService.getClientById(clientId);
+        if (!client.isPresent()) {
             System.out.println("No client found for ID: " + clientId);
             return false; // or throw an exception, based on your design
         }
-        return client.isEstProfessionnel();
+        return client.get().isEstProfessionnel();
     }
+    
 
 }
