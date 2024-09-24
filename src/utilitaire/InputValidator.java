@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Logger;
 
-import entity.enums.EtatProjet;
-
 public class InputValidator {
 
     private static final Logger logger = Logger.getLogger(InputValidator.class.getName());
@@ -33,7 +31,7 @@ public class InputValidator {
             try {
                 return Double.parseDouble(input);
             } catch (NumberFormatException e) {
-                System.out.println("Entrée invalide. Veuillez entrer un nombre décimal.");
+                System.out.println(RED + "Entrée invalide. Veuillez entrer un nombre décimal." + RESET);
             }
         }
     }
@@ -45,7 +43,7 @@ public class InputValidator {
             if (input.equals("true") || input.equals("false")) {
                 return Boolean.parseBoolean(input);
             } else {
-                System.out.println("Entrée invalide. Veuillez entrer 'true' ou 'false'.");
+                System.out.println(RED + "Entrée invalide. Veuillez entrer 'true' ou 'false'." + RESET);
             }
         }
     }
@@ -57,32 +55,31 @@ public class InputValidator {
             try {
                 return LocalDate.parse(input);
             } catch (DateTimeParseException e) {
-                System.out.println("Date invalide. Veuillez entrer une date au format 'yyyy-MM-dd'.");
+                System.out.println(RED + "Date invalide. Veuillez entrer une date au format 'yyyy-MM-dd'." + RESET);
             }
         }
     }
 
-    // General string validation
     public String getValidatedString(String fieldName) {
         String input;
         do {
             System.out.print("Entrez " + fieldName + " : ");
             input = scanner.nextLine().trim();
             if (input.isEmpty()) {
-                System.out.println(fieldName + " ne peut pas être vide.");
+                System.out.println(RED + fieldName + " ne peut pas être vide." + RESET);
             }
         } while (input.isEmpty());
         return input;
     }
 
-    // Validation against a list of allowed values
     public String getValidatedString(String fieldName, List<String> allowedValues) {
         String input;
         do {
             System.out.print("Entrez " + fieldName + " : ");
             input = scanner.nextLine().trim().toUpperCase();
             if (!allowedValues.contains(input)) {
-                System.out.println("Valeur invalide pour " + fieldName + ". Valeurs acceptées : " + allowedValues);
+                System.out.println(
+                        RED + "Valeur invalide pour " + fieldName + ". Valeurs acceptées : " + allowedValues + RESET);
             }
         } while (!allowedValues.contains(input));
         return input;
@@ -93,7 +90,7 @@ public class InputValidator {
             String dateStr = promptString(message);
             if (allowEmpty && dateStr.isEmpty()) {
                 logger.info(GREEN + "No date provided, returning null." + RESET);
-                return null; // No date provided
+                return null;
             }
             LocalDate datePublication = DateUtils.parseDate(dateStr);
             if (datePublication != null && DateUtils.isDateValid(datePublication)) {
@@ -113,7 +110,7 @@ public class InputValidator {
             System.out.print(message);
         }
         int value = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+        scanner.nextLine();
         return value;
     }
 
@@ -128,51 +125,49 @@ public class InputValidator {
     }
 
     private boolean isValidName(String name) {
-        // Check if name contains only letters and spaces
         return name != null && name.matches("[a-zA-Z\\s]+");
     }
-    //////////////////////////////////////////
 
-    private String getStringInput(String prompt) {
-        String input;
-        do {
-            System.out.print(prompt);
-            input = scanner.nextLine().trim();
-            if (input.isEmpty()) {
-                System.out.println("Input cannot be empty. Please try again.");
-            }
-        } while (input.isEmpty());
-        return input;
-    }
-
-    private double getDoubleInput(String prompt) {
-        double value = 0;
-        boolean valid = false;
-        do {
-            System.out.print(prompt);
-            String input = scanner.nextLine();
+    public Long promptLong(String message) {
+        System.out.print(message);
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
             try {
-                value = Double.parseDouble(input);
-                valid = true;
+                return Long.parseLong(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a valid number.");
+                System.out.print("Invalid input. Please enter a valid long value: ");
             }
-        } while (!valid);
-        return value;
+        }
     }
 
-    private EtatProjet getEtatProjetInput(String prompt) {
-        EtatProjet etat = null;
-        do {
-            System.out.print(prompt);
-            String input = scanner.nextLine().trim().toUpperCase();
-            try {
-                etat = EtatProjet.valueOf(input);
-            } catch (IllegalArgumentException e) {
-                System.out.println("Invalid state. Please enter one of the following: EN_COURS, TERMINE, ANNULE.");
+    public boolean isValidPhoneNumber(String phone) {
+        String regex = "^\\+?[0-9]{10,15}$"; // Example: allows optional '+' followed by 10 to 15 digits
+        return phone.matches(regex);
+    }
+
+    public String promptValidPhoneNumber(String message) {
+        String phone;
+        while (true) {
+            phone = promptString(message);
+            if (isValidPhoneNumber(phone)) {
+                return phone; // Return the valid phone number
+            } else {
+                System.out.println(RED + "Numéro de téléphone invalide. Veuillez entrer un numéro valide." + RESET);
             }
-        } while (etat == null);
-        return etat;
+        }
+    }
+
+    public boolean promptProfessionalStatus(String message) {
+        while (true) {
+            int input = promptInt(message);
+            if (input == 1) {
+                return true; // Professional
+            } else if (input == 2) {
+                return false; // Not professional
+            } else {
+                System.out.println(RED + "Entrée invalide. Veuillez entrer 1 pour Oui ou 2 pour Non." + RESET);
+            }
+        }
     }
 
 }
