@@ -11,7 +11,7 @@ public class ClientController {
         this.clientService = clientService;
     }
 
-    public void registerClient(String name, String address, String phone, boolean isProfessional) {
+    public Client registerClient(String name, String address, String phone, boolean isProfessional) {
         Client client = new Client();
         client.setNom(name);
         client.setAdresse(address);
@@ -29,6 +29,7 @@ public class ClientController {
 
         clientService.addClient(client);
         System.out.println("Client registered successfully: " + client.getNom());
+        return client; // Return the created Client object
     }
 
     // Method to calculate discount for professional clients
@@ -54,6 +55,15 @@ public class ClientController {
             System.out.println("No client found with name: " + name);
         }
         return client;
+    }
+
+    public boolean isUserProfessional(Long clientId) {
+        Client client = clientService.getClientById(clientId);
+        if (client == null) {
+            System.out.println("No client found for ID: " + clientId);
+            return false; // or throw an exception, based on your design
+        }
+        return client.isEstProfessionnel();
     }
 
 }
