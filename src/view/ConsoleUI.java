@@ -3,6 +3,7 @@ package view;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -106,7 +107,7 @@ public class ConsoleUI {
             if (newProject.getId() != null) {
                 System.out.println("Projet créé avec succès! ID du projet : " + newProject.getId());
                 addComponents(newProject.getId());
-                finalizeAndCreateQuote(newProject.getId(), client.isEstProfessionnel()); // Pass the professional status
+                finalizeAndCreateQuote(newProject.getId(), client.isEstProfessionnel());
             } else {
                 System.out.println("Erreur lors de la création du projet. ID non généré.");
             }
@@ -118,18 +119,19 @@ public class ConsoleUI {
         int clientOption = inputValidator
                 .promptInt("1. Chercher un client existant\n2. Ajouter un nouveau client\nChoisissez une option : ");
 
-        if (clientOption == 1) {
-            String clientName = inputValidator.promptString("Entrez le nom du client : ");
-            // Fetch the client once and store it in a variable
-            Client client = clientController.getClientByName(clientName);
-            if (client != null) {
-                // Use computeIfAbsent to cache the client only if it exists
-                return clientCache.computeIfAbsent(client.getId(), id -> client);
-            }
-            System.out.println("Aucun client trouvé avec le nom : " + clientName);
-        } else if (clientOption == 2) {
-            return addNewClient();
-        }
+        return clientOption == 1 ? searchExistingClient() : addNewClient();
+    }
+
+    private Client searchExistingClient() {
+        String clientName = inputValidator.promptString("Entrez le nom du client : ");
+        Optional<Client> optionalClient = clientController.getClientByName(clientName);
+
+        return optionalClient.map(client -> clientCache.computeIfAbsent(client.getId(), id -> client))
+                .orElseGet(() -> handleClientNotFound(clientName));
+    }
+
+    private Client handleClientNotFound(String clientName) {
+        System.out.println("Aucun client trouvé avec le nom : " + clientName);
         return null;
     }
 
@@ -137,11 +139,10 @@ public class ConsoleUI {
         System.out.println("--- Ajouter un nouveau client ---");
         String clientName = inputValidator.promptString("Entrez le nom du client : ");
 
-        // Check if client already exists
-        Client existingClient = clientController.getClientByName(clientName);
-        if (existingClient != null) {
-            System.out.println("Un client avec ce nom existe déjà : " + existingClient.getNom());
-            return existingClient; // Return the existing client
+        Optional<Client> optionalExistingClient = clientController.getClientByName(clientName);
+        if (optionalExistingClient.isPresent()) {
+            System.out.println("Un client avec ce nom existe déjà : " + optionalExistingClient.get().getNom());
+            return optionalExistingClient.get();
         }
 
         String clientAddress = inputValidator.promptString("Entrez l'adresse du client : ");
@@ -157,45 +158,53 @@ public class ConsoleUI {
     private void addComponents(Long projectId) {
         System.out.println("--- Ajout des composants ---");
         addMaterials(projectId);
-        addLabor(projectId);
+        addLaborComponents(projectId);
+        ;
     }
 
     private void addMaterials(Long projectId) {
         System.out.println("--- Ajout des matériaux ---");
-        boolean addAnotherMaterial;
-        do {
-            String materialName = inputValidator.promptString("Entrez le nom du matériau : ");
-            double quantity = inputValidator.promptDouble("Entrez la quantité de ce matériau (en m²) : ");
-            double unitCost = inputValidator.promptDouble("Entrez le coût unitaire de ce matériau (€/m²) : ");
-            double transportCost = inputValidator.promptDouble("Entrez le coût de transport de ce matériau (€) : ");
-            double qualityCoefficient = inputValidator.promptDouble(
-                    "Entrez le coefficient de qualité du matériau (1.0 = standard, > 1.0 = haute qualité) : ");
-
-            composantController.addMateriel(materialName, unitCost, quantity, "Matériau", 0.2, transportCost,
-                    qualityCoefficient, projectId);
-            System.out.println("Matériau ajouté avec succès !");
-            addAnotherMaterial = inputValidator
-                    .getBooleanInput("Voulez-vous ajouter un autre matériau ? (true/false) : ");
-        } while (addAnotherMaterial);
+        addComponents(projectId, "matériaux", this::addMaterial);
     }
 
-    private void addLabor(Long projectId) {
+    private void addLaborComponents(Long projectId) {
         System.out.println("--- Ajout de la main-d'œuvre ---");
-        boolean addAnotherLabor;
-        do {
-            String laborType = inputValidator
-                    .promptString("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
-            double hourlyRate = inputValidator.promptDouble("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
-            double hoursWorked = inputValidator.promptDouble("Entrez le nombre d'heures travaillées : ");
-            double productivityFactor = inputValidator
-                    .promptDouble("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
+        addComponents(projectId, "main-d'œuvre", this::addLaborDetails); // Renamed method reference to avoid conflict
+    }
 
-            composantController.addMainOeuvre(laborType, hourlyRate, hoursWorked, productivityFactor, "Main-d'œuvre",
-                    0.2, projectId);
-            System.out.println("Main-d'œuvre ajoutée avec succès !");
-            addAnotherLabor = inputValidator
-                    .getBooleanInput("Voulez-vous ajouter un autre type de main-d'œuvre ? (true/false) : ");
-        } while (addAnotherLabor);
+    private void addComponents(Long projectId, String componentType, Consumer<Long> addComponent) {
+        boolean addAnother;
+        do {
+            addComponent.accept(projectId);
+            addAnother = inputValidator
+                    .getBooleanInput("Voulez-vous ajouter un autre " + componentType + " ? (true/false) : ");
+        } while (addAnother);
+    }
+
+    private void addMaterial(Long projectId) {
+        String materialName = inputValidator.promptString("Entrez le nom du matériau : ");
+        double quantity = inputValidator.promptDouble("Entrez la quantité de ce matériau (en m²) : ");
+        double unitCost = inputValidator.promptDouble("Entrez le coût unitaire de ce matériau (€/m²) : ");
+        double transportCost = inputValidator.promptDouble("Entrez le coût de transport de ce matériau (€) : ");
+        double qualityCoefficient = inputValidator.promptDouble(
+                "Entrez le coefficient de qualité du matériau (1.0 = standard, > 1.0 = haute qualité) : ");
+
+        composantController.addMateriel(materialName, unitCost, quantity, "Matériau", 0.2, transportCost,
+                qualityCoefficient, projectId);
+        System.out.println("Matériau ajouté avec succès !");
+    }
+
+    private void addLaborDetails(Long projectId) {
+        String laborType = inputValidator
+                .promptString("Entrez le type de main-d'œuvre (e.g., Ouvrier de base, Spécialiste) : ");
+        double hourlyRate = inputValidator.promptDouble("Entrez le taux horaire de cette main-d'œuvre (€/h) : ");
+        double hoursWorked = inputValidator.promptDouble("Entrez le nombre d'heures travaillées : ");
+        double productivityFactor = inputValidator
+                .promptDouble("Entrez le facteur de productivité (1.0 = standard, > 1.0 = haute productivité) : ");
+
+        composantController.addMainOeuvre(laborType, hourlyRate, hoursWorked, productivityFactor, "Main-d'œuvre", 0.2,
+                projectId);
+        System.out.println("Main-d'œuvre ajoutée avec succès !");
     }
 
     private void finalizeAndCreateQuote(Long projectId, boolean isProfessional) {
